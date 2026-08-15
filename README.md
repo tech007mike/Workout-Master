@@ -1,1 +1,0 @@
-entertainment purposes only 
