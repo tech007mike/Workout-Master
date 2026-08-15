@@ -9,14 +9,11 @@
   :root{
     --gap: 20px;
     --cols: 3;
-
     --bg0: #0b0f14;
     --bg1: #0f1722;
-
     --text: rgba(255,255,255,.92);
     --gold2:#f2deaa;
     --danger:#ff5c6e;
-
     --shadow: 0 16px 45px rgba(0,0,0,.55);
     --shadow2: 0 10px 28px rgba(0,0,0,.45);
     --radius: 14px;
@@ -34,7 +31,6 @@
     font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Helvetica,Arial,sans-serif;
     color:var(--text);
     padding:20px;
-
     background:
       radial-gradient(1200px 900px at 15% 10%, rgba(61,214,198,.12), transparent 55%),
       radial-gradient(900px 700px at 85% 20%, rgba(215,180,106,.12), transparent 52%),
@@ -62,12 +58,10 @@
     border-radius:var(--radius);
     overflow:hidden;
     cursor:pointer;
-
     background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
     border:1px solid rgba(255,255,255,.10);
     box-shadow: var(--shadow2);
     transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-
     user-select:none;
     -webkit-user-select:none;
     -webkit-touch-callout:none;
@@ -106,27 +100,21 @@
     left:12px;
     right:12px;
     bottom:12px;
-
     padding:10px 10px;
     border-radius:12px;
-
     background:
       linear-gradient(180deg, rgba(12,16,22,.65), rgba(12,16,22,.45));
     border:1px solid rgba(255,255,255,.10);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
     text-align:center;
     font-weight:900;
     letter-spacing:.35px;
-
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
-
     font-size:18px;
     line-height:1.1;
-
     box-shadow: 0 10px 26px rgba(0,0,0,.45);
   }
 
@@ -137,7 +125,6 @@
     display:flex;
     gap:8px;
     z-index:5;
-
     opacity:0;
     pointer-events:none;
     transform:translateY(-6px);
@@ -224,7 +211,6 @@
     padding:16px;
     border-radius:16px;
     background:transparent;
-
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
     touch-action:pan-y;
@@ -419,7 +405,6 @@
     display:none;
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
-
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
     touch-action:pan-y;
@@ -483,7 +468,6 @@
     background: linear-gradient(180deg, rgba(255,92,110,.18), rgba(255,92,110,.08));
   }
 
-  /* ===== Group List Sort UI ===== */
   .gl-toolbar{
     display:flex;
     gap:10px;
@@ -629,9 +613,6 @@
 <div id="modal" class="modal" role="dialog" aria-modal="true"></div>
 
 <script>
-/* =======================
-   STORAGE + DEFAULT DATA
-======================= */
 const APP_KEY = 'BSCULPT::APPDATA::v1';
 const KEY_PREFIX = 'BSCULPT::';
 const DEFAULT_SET_LABELS = ['Warm Up','1','2','3'];
@@ -665,14 +646,11 @@ function loadAppData(){
       localStorage.setItem(APP_KEY, JSON.stringify(d));
       return d;
     }
-
     const parsed = JSON.parse(raw);
     if(!parsed || !Array.isArray(parsed.groups)) throw new Error('bad');
-
     if(!Array.isArray(parsed.setLabels) || parsed.setLabels.length === 0){
       parsed.setLabels = [...DEFAULT_SET_LABELS];
     }
-
     let upgraded = false;
     parsed.groups.forEach(group=>{
       (group.exercises || []).forEach(ex=>{
@@ -686,11 +664,9 @@ function loadAppData(){
         }
       });
     });
-
     if(upgraded){
       localStorage.setItem(APP_KEY, JSON.stringify(parsed));
     }
-
     return parsed;
   }catch{
     const d = defaultAppData();
@@ -705,17 +681,13 @@ function saveAppData(data){
 
 let APP = loadAppData();
 let CURRENT_GROUP_ID = null;
-
 let BODY_SCROLL_Y = 0;
 
 function lockBackgroundScroll(){
   if(document.body.classList.contains('modal-open')) return;
-
   BODY_SCROLL_Y = window.scrollY || document.documentElement.scrollTop || 0;
-
   document.documentElement.classList.add('modal-open');
   document.body.classList.add('modal-open');
-
   document.body.style.position = 'fixed';
   document.body.style.top = `-${BODY_SCROLL_Y}px`;
   document.body.style.left = '0';
@@ -726,65 +698,46 @@ function lockBackgroundScroll(){
 function unlockBackgroundScroll(){
   const panelOpen = document.querySelector('.overlay')?.style.display === 'block';
   const modalOpen = document.getElementById('modalOverlay')?.style.display === 'block';
-
   if(panelOpen || modalOpen) return;
-
   document.documentElement.classList.remove('modal-open');
   document.body.classList.remove('modal-open');
-
   document.body.style.position = '';
   document.body.style.top = '';
   document.body.style.left = '';
   document.body.style.right = '';
   document.body.style.width = '';
-
   window.scrollTo(0, BODY_SCROLL_Y);
 }
 
 function stopBackgroundTouchScroll(e){
   const modal = document.getElementById('modal');
   const panel = document.getElementById('panel');
-
   const modalVisible = modal?.style.display === 'block';
   const panelVisible = document.querySelector('.overlay')?.style.display === 'block';
-
   if(modalVisible){
-    if(!e.target.closest('#modal')){
-      e.preventDefault();
-    }
+    if(!e.target.closest('#modal')) e.preventDefault();
     return;
   }
-
-  if(panelVisible && !e.target.closest('#panel')){
-    e.preventDefault();
-  }
+  if(panelVisible && !e.target.closest('#panel')) e.preventDefault();
 }
-
 document.addEventListener('touchmove', stopBackgroundTouchScroll, {passive:false});
 
 function installTouchScrollContainment(el){
   if(!el || el.dataset.touchContainmentInstalled === '1') return;
   el.dataset.touchContainmentInstalled = '1';
-
   let startY = 0;
-
   el.addEventListener('touchstart', (e)=>{
     if(!e.touches?.length) return;
     startY = e.touches[0].clientY;
   }, {passive:true});
-
   el.addEventListener('touchmove', (e)=>{
     if(!e.touches?.length) return;
-
     const currentY = e.touches[0].clientY;
     const deltaY = currentY - startY;
-
     const atTop = el.scrollTop <= 0;
     const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight;
-
     const tryingPastTop = atTop && deltaY > 0;
     const tryingPastBottom = atBottom && deltaY < 0;
-
     if((tryingPastTop || tryingPastBottom) && el.scrollHeight > el.clientHeight){
       e.preventDefault();
     }
@@ -797,22 +750,14 @@ window.addEventListener('DOMContentLoaded', ()=>{
 });
 
 function getDefaultSetLabels(){
-  if(Array.isArray(APP.setLabels) && APP.setLabels.length){
-    return [...APP.setLabels];
-  }
+  if(Array.isArray(APP.setLabels) && APP.setLabels.length) return [...APP.setLabels];
   return [...DEFAULT_SET_LABELS];
 }
-
 function getExerciseSetLabels(ex){
-  if(ex && Array.isArray(ex.setLabels) && ex.setLabels.length){
-    return ex.setLabels;
-  }
+  if(ex && Array.isArray(ex.setLabels) && ex.setLabels.length) return ex.setLabels;
   return getDefaultSetLabels();
 }
 
-/* =======================
-   GRID TOGGLE (1/2/3)
-======================= */
 function getGridCols(){
   const n = parseInt(localStorage.getItem(GRID_KEY) || '3', 10);
   return [1,2,3].includes(n) ? n : 3;
@@ -831,12 +776,8 @@ function toggleGrid(){
   applyGridCols(next);
 }
 
-/* =======================
-   LABEL AUTO-FIT
-======================= */
 let fitQueued = false;
 function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
-
 function queueLabelFit(){
   if(fitQueued) return;
   fitQueued = true;
@@ -845,20 +786,16 @@ function queueLabelFit(){
     fitAllGroupLabels();
   });
 }
-
 function fitLabelFont(labelEl){
   if(!labelEl) return;
   const tile = labelEl.closest('.thumbnail-container');
   if(!tile) return;
-
   const tileW = tile.clientWidth || 200;
   const textLen = (labelEl.textContent || '').trim().length;
-
   const baseMax = clamp(Math.floor(tileW / 10), 14, 24);
   const lengthPenalty = clamp(Math.floor((textLen - 10) / 4), 0, 6);
   const maxPx = clamp(baseMax - lengthPenalty, 12, 24);
   const minPx = 10;
-
   labelEl.style.fontSize = maxPx + 'px';
   let size = maxPx;
   while(size > minPx && labelEl.scrollWidth > labelEl.clientWidth){
@@ -866,34 +803,25 @@ function fitLabelFont(labelEl){
     labelEl.style.fontSize = size + 'px';
   }
 }
-
 function fitAllGroupLabels(){
-  document.querySelectorAll('#groupsRoot .thumbnail-container .label')
-    .forEach(fitLabelFont);
+  document.querySelectorAll('#groupsRoot .thumbnail-container .label').forEach(fitLabelFont);
 }
 window.addEventListener('resize', queueLabelFit);
 
-/* =======================
-   LONG-PRESS HELPERS
-======================= */
 function hideAllGroupActions(){
-  document.querySelectorAll('.thumbnail-container.show-actions')
-    .forEach(el => el.classList.remove('show-actions'));
+  document.querySelectorAll('.thumbnail-container.show-actions').forEach(el => el.classList.remove('show-actions'));
 }
-
 document.addEventListener('click', (e)=>{
   if(e.target.closest('.tile-actions')) return;
   const inTile = e.target.closest('.thumbnail-container');
   if(!inTile) hideAllGroupActions();
 });
-
 document.addEventListener('contextmenu', (e)=>{
   if(e.target.closest('.thumbnail-container')) e.preventDefault();
 }, {passive:false});
 
 function attachLongPressHandlers(tile, groupId){
   let timer = null;
-
   function startPress(){
     clearTimeout(timer);
     timer = setTimeout(()=>{
@@ -909,14 +837,11 @@ function attachLongPressHandlers(tile, groupId){
   tile.addEventListener('touchend', endPress, {passive:true});
   tile.addEventListener('touchmove', endPress, {passive:true});
   tile.addEventListener('touchcancel', endPress, {passive:true});
-
   tile.addEventListener('mousedown', startPress);
   tile.addEventListener('mouseup', endPress);
   tile.addEventListener('mouseleave', endPress);
-
   tile.addEventListener('click', (e)=>{
     if(e.target.closest('.tile-actions')) return;
-
     if(tile.classList.contains('show-actions')){
       tile.classList.remove('show-actions');
       e.preventDefault();
@@ -927,9 +852,6 @@ function attachLongPressHandlers(tile, groupId){
   });
 }
 
-/* =======================
-   RENDER GROUP TILES
-======================= */
 function escapeHtml(s){
   return String(s)
     .replaceAll('&','&amp;')
@@ -950,11 +872,9 @@ function getDisplayedGroups(){
 function renderGroups(){
   const root = document.getElementById('groupsRoot');
   root.innerHTML = '';
-
   getDisplayedGroups().forEach(g=>{
     const tile = document.createElement('div');
     tile.className = 'thumbnail-container';
-
     tile.innerHTML = `
       <div class="tile-actions">
         <button class="icon-btn" title="Edit group"
@@ -965,35 +885,26 @@ function renderGroups(){
       <img src="${g.img || ''}" alt="">
       <div class="label">${escapeHtml(g.name)}</div>
     `;
-
     const img = tile.querySelector('img');
     if(img){
       img.addEventListener('load', queueLabelFit, {once:true});
       img.addEventListener('error', queueLabelFit, {once:true});
     }
-
     attachLongPressHandlers(tile, g.id);
     root.appendChild(tile);
   });
-
   queueLabelFit();
 }
 
-/* =======================
-   GROUP PANEL
-======================= */
 function openGroupPanel(groupId){
   CURRENT_GROUP_ID = groupId;
   const g = APP.groups.find(x=>x.id === groupId);
   if(!g) return;
-
   document.querySelector('.overlay').style.display='block';
   lockBackgroundScroll();
-
   const panel = document.getElementById('panel');
   panel.innerHTML = '';
   panel.scrollTop = 0;
-
   const header = document.createElement('div');
   header.className = 'panel-header';
   header.innerHTML = `
@@ -1004,7 +915,6 @@ function openGroupPanel(groupId){
     </div>
   `;
   panel.appendChild(header);
-
   g.exercises.forEach(ex=>{
     const card=document.createElement('div');
     card.className='exercise-card';
@@ -1017,15 +927,12 @@ function openGroupPanel(groupId){
         <button class="danger" onclick="deleteExercise('${g.id}','${ex.id}')">Delete</button>
       </div>
     `;
-
     getExerciseSetLabels(ex).forEach(label=>{
       card.appendChild(buildChart(g.name, ex.name, label));
     });
-
     panel.appendChild(card);
   });
 }
-
 function closePanel(){
   document.querySelector('.overlay').style.display='none';
   document.getElementById('panel').innerHTML='';
@@ -1033,87 +940,56 @@ function closePanel(){
   unlockBackgroundScroll();
 }
 
-/* =======================
-   WORKOUT ENTRY CHART
-======================= */
 function safeKey(str){ return String(str).replace(/\s+/g,' ').trim(); }
 
 function buildChart(groupName, exName, label){
   const key=`${KEY_PREFIX}${safeKey(groupName)}::${safeKey(exName)}::${safeKey(label)}`;
   const saved=JSON.parse(localStorage.getItem(key)||'{}');
-
   const wrapper=document.createElement('div');
   wrapper.className='chart-wrapper';
-
   wrapper.innerHTML=`
     <div class="chart">
       <div class="cell chart-label">${escapeHtml(label)}</div>
-
       <div class="cell editable" style="grid-column:2/span 2">
-        <input
-          class="rep-input"
-          type="number"
-          inputmode="numeric"
-          step="1"
-          min="0"
-          placeholder="reps"
-          value="${saved.set > 0 ? saved.set : ''}"
-        >
+        <input class="rep-input" type="number" inputmode="numeric" step="1" min="0"
+          placeholder="reps" value="${saved.set > 0 ? saved.set : ''}">
       </div>
-
       <div class="cell editable" style="grid-column:4/span 2">
-        <input
-          class="weight-input"
-          type="number"
-          inputmode="decimal"
-          step="0.5"
-          min="0"
-          placeholder="lbs"
-          value="${saved.weight > 0 ? saved.weight : ''}"
-        >
+        <input class="weight-input" type="number" inputmode="decimal" step="0.5" min="0"
+          placeholder="lbs" value="${saved.weight > 0 ? saved.weight : ''}">
       </div>
-
       ${[45,25,10,5,2.5].map(p=>`<div class="cell plate" data-w="${p}">${p} × 0</div>`).join('')}
     </div>`;
-
   const repInput=wrapper.querySelector('.rep-input');
   const weightInput=wrapper.querySelector('.weight-input');
   const plates=[...wrapper.querySelectorAll('.plate')];
 
   function update(){
     let w=parseFloat(weightInput.value)||0, r=w;
-
     plates.forEach(p=>{
       const pw=+p.dataset.w;
       const c=Math.floor(r/pw); r-=c*pw;
       p.textContent=`${pw} × ${c}`;
       p.classList.toggle('active',c>0);
     });
-
     const reps=parseInt(repInput.value);
     const repsSafe = Number.isFinite(reps) ? reps : 0;
     localStorage.setItem(key, JSON.stringify({weight:w,set:repsSafe}));
   }
-
   repInput.oninput=update;
   weightInput.oninput=update;
   update();
   return wrapper;
 }
 
-/* =======================
-   MODAL HELPERS
-======================= */
 function openModal(html){
   document.getElementById('modal').innerHTML = html;
   document.getElementById('modalOverlay').style.display = 'block';
   document.getElementById('modal').style.display = 'block';
   lockBackgroundScroll();
-
   const modal = document.getElementById('modal');
   if(modal) modal.scrollTop = 0;
 }
-
 function closeModal(){
   document.getElementById('modalOverlay').style.display = 'none';
   document.getElementById('modal').style.display = 'none';
@@ -1132,44 +1008,23 @@ function readFileAsDataURL(file){
   });
 }
 
-/* =======================
-   SET / CHART SETTINGS
-   (PER EXERCISE)
-======================= */
 function roundToNearest2_5(value){
   return Math.round((Number(value) || 0) / 2.5) * 2.5;
 }
-
 function formatWeight(value){
   const n = Number(value) || 0;
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-/*
-  Percentage breakdown:
-  Set 1: Warm Up = 50% of max
-  Set 2: Max = 100% of max
-  Set 3+: 80% of the immediately previous working set
-
-  Reps:
-  Warm Up = max reps + 2
-  Max = max reps
-  Set 3 = max reps + 2
-  Set 4 = max reps + 4
-  ...continuing +2 reps per additional set.
-*/
 function calculatePercentageBreakdown(setCount, maxWeight, maxReps){
   const count = Math.max(1, parseInt(setCount, 10) || 1);
   const maxW = Math.max(0, Number(maxWeight) || 0);
   const maxR = Math.max(0, parseInt(maxReps, 10) || 0);
-
   const rows = [];
-
   for(let i = 0; i < count; i++){
     let weight = 0;
     let reps = maxR;
     let suggestedLabel = `Set ${i + 1}`;
-
     if(i === 0){
       weight = roundToNearest2_5(maxW * 0.5);
       reps = maxR + 2;
@@ -1184,15 +1039,8 @@ function calculatePercentageBreakdown(setCount, maxWeight, maxReps){
       reps = maxR + ((i - 1) * 2);
       suggestedLabel = `Set ${i + 1}`;
     }
-
-    rows.push({
-      index: i,
-      weight,
-      reps,
-      suggestedLabel
-    });
+    rows.push({ index: i, weight, reps, suggestedLabel });
   }
-
   return rows;
 }
 
@@ -1200,7 +1048,6 @@ function openSetSettings(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
-
   const labels = [...getExerciseSetLabels(ex)];
   const pct = ex.percentageConfig || {};
   const pctEnabled = pct.enabled === true;
@@ -1208,88 +1055,49 @@ function openSetSettings(groupId, exId){
   const maxReps = Number.isFinite(Number(pct.maxReps)) && Number(pct.maxReps) > 0
     ? Number(pct.maxReps)
     : '';
-
   openModal(`
     <h3>Edit Sets — ${escapeHtml(ex.name)}</h3>
-
     <div class="row">
-      <input
-        id="setCount"
-        type="number"
-        inputmode="numeric"
-        min="1"
-        max="20"
-        step="1"
-        value="${labels.length}"
-        placeholder="Number of sets"
-        oninput="handleSetCountChange(this.value)"
-      >
+      <input id="setCount" type="number" inputmode="numeric" min="1" max="20" step="1"
+        value="${labels.length}" placeholder="Number of sets"
+        oninput="handleSetCountChange(this.value)">
     </div>
-
     <div class="hint">
       These set rows and labels apply only to <b>${escapeHtml(ex.name)}</b>.
       Other exercises will not be changed.
     </div>
-
     <div class="percent-box">
       <label class="percent-toggle">
-        <input
-          id="percentageEnabled"
-          type="checkbox"
-          ${pctEnabled ? 'checked' : ''}
-          onchange="togglePercentageFields()"
-        >
+        <input id="percentageEnabled" type="checkbox" ${pctEnabled ? 'checked' : ''}
+          onchange="togglePercentageFields()">
         Use percentage breakdown
       </label>
-
       <div id="percentageFields" style="${pctEnabled ? '' : 'display:none'}">
         <div class="percent-fields">
-          <input
-            id="percentageMaxWeight"
-            type="number"
-            inputmode="decimal"
-            min="0"
-            step="2.5"
-            placeholder="Max weight (lb)"
-            value="${maxWeight}"
-            oninput="updatePercentagePreview()"
-          >
-          <input
-            id="percentageMaxReps"
-            type="number"
-            inputmode="numeric"
-            min="1"
-            step="1"
-            placeholder="Max reps"
-            value="${maxReps}"
-            oninput="updatePercentagePreview()"
-          >
+          <input id="percentageMaxWeight" type="number" inputmode="decimal" min="0" step="2.5"
+            placeholder="Max weight (lb)" value="${maxWeight}" oninput="updatePercentagePreview()">
+          <input id="percentageMaxReps" type="number" inputmode="numeric" min="1" step="1"
+            placeholder="Max reps" value="${maxReps}" oninput="updatePercentagePreview()">
         </div>
-
         <div class="hint" style="margin-top:8px;">
           Set 1 = 50% warm up. Set 2 = max. Each set after that is
           80% of the previous set, rounded to the nearest 2.5 lb.
           Reps increase by 2 for each set after the max set.
         </div>
-
         <div id="percentagePreview" class="percent-preview"></div>
       </div>
     </div>
-
     <div id="setLabelsContainer"
       style="display:flex; flex-direction:column; gap:8px; margin-top:12px;"></div>
-
     <div class="hint" style="margin-top:10px;">
       You can still edit every label manually. When percentage breakdown is enabled,
       saving also fills the calculated weight and reps into this exercise.
     </div>
-
     <div class="actions">
       <button onclick="closeModal()">Cancel</button>
       <button onclick="confirmSetSettings('${groupId}','${exId}')">Save</button>
     </div>
   `);
-
   renderSetLabelInputs(labels.length, labels);
   updatePercentagePreview();
 }
@@ -1298,60 +1106,38 @@ function handleSetCountChange(count){
   renderSetLabelInputs(count);
   updatePercentagePreview();
 }
-
 function togglePercentageFields(){
   const enabled = !!document.getElementById('percentageEnabled')?.checked;
   const fields = document.getElementById('percentageFields');
-  if(fields){
-    fields.style.display = enabled ? '' : 'none';
-  }
+  if(fields) fields.style.display = enabled ? '' : 'none';
   updatePercentagePreview();
 }
-
 function renderSetLabelInputs(count, suppliedValues = null){
   const container = document.getElementById('setLabelsContainer');
   if(!container) return;
-
   let n = parseInt(count, 10);
   if(!Number.isFinite(n)) n = 1;
   n = Math.max(1, Math.min(20, n));
-
   const countInput = document.getElementById('setCount');
-  if(countInput && String(countInput.value) !== String(n)){
-    countInput.value = n;
-  }
-
+  if(countInput && String(countInput.value) !== String(n)) countInput.value = n;
   let currentValues = [];
-
   if(Array.isArray(suppliedValues)){
     currentValues = [...suppliedValues];
   }else{
-    currentValues = [...container.querySelectorAll('.set-label-input')]
-      .map(input => input.value);
+    currentValues = [...container.querySelectorAll('.set-label-input')].map(input => input.value);
   }
-
   container.innerHTML = '';
-
   for(let i = 0; i < n; i++){
     let value = currentValues[i] !== undefined ? currentValues[i] : `Set ${i + 1}`;
-
     const row = document.createElement('div');
     row.className = 'row';
     row.style.margin = '0';
-
     row.innerHTML = `
-      <input
-        class="set-label-input"
-        data-index="${i}"
-        placeholder="Set ${i + 1} label"
-        value="${escapeHtml(value)}"
-        oninput="updatePercentagePreview()"
-      >
-    `;
-
+      <input class="set-label-input" data-index="${i}"
+        placeholder="Set ${i + 1} label" value="${escapeHtml(value)}"
+        oninput="updatePercentagePreview()">`;
     container.appendChild(row);
   }
-
   if(document.getElementById('percentageEnabled')?.checked){
     applySuggestedPercentageLabels();
   }
@@ -1360,10 +1146,7 @@ function renderSetLabelInputs(count, suppliedValues = null){
 function applySuggestedPercentageLabels(){
   const enabled = !!document.getElementById('percentageEnabled')?.checked;
   if(!enabled) return;
-
-  const count = parseInt(document.getElementById('setCount')?.value, 10) || 1;
   const inputs = [...document.querySelectorAll('#setLabelsContainer .set-label-input')];
-
   inputs.forEach((input, index)=>{
     if(index === 0 && (!input.value.trim() || /^set\s*1$/i.test(input.value.trim()))){
       input.value = 'Warm Up';
@@ -1378,30 +1161,22 @@ function applySuggestedPercentageLabels(){
 function updatePercentagePreview(){
   const preview = document.getElementById('percentagePreview');
   if(!preview) return;
-
   const enabled = !!document.getElementById('percentageEnabled')?.checked;
   if(!enabled){
     preview.innerHTML = '';
     return;
   }
-
   applySuggestedPercentageLabels();
-
   const setCount = parseInt(document.getElementById('setCount')?.value, 10) || 1;
   const maxWeight = Number(document.getElementById('percentageMaxWeight')?.value) || 0;
   const maxReps = parseInt(document.getElementById('percentageMaxReps')?.value, 10) || 0;
   const labels = [...document.querySelectorAll('#setLabelsContainer .set-label-input')]
     .map((input, i)=>input.value.trim() || `Set ${i + 1}`);
-
   if(maxWeight <= 0 || maxReps <= 0){
-    preview.innerHTML = `
-      <div class="hint">Enter max weight and max reps to preview the breakdown.</div>
-    `;
+    preview.innerHTML = `<div class="hint">Enter max weight and max reps to preview the breakdown.</div>`;
     return;
   }
-
   const rows = calculatePercentageBreakdown(setCount, maxWeight, maxReps);
-
   preview.innerHTML = rows.map((row, i)=>`
     <div class="percent-preview-row">
       <strong>${escapeHtml(labels[i] || row.suggestedLabel)}</strong>
@@ -1415,85 +1190,56 @@ function confirmSetSettings(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
-
   const inputs = [...document.querySelectorAll('#setLabelsContainer .set-label-input')];
-
   if(inputs.length === 0){
     alert('You must have at least one set.');
     return;
   }
-
   const newLabels = inputs.map(input => input.value.trim());
-
   if(newLabels.some(label => !label)){
     alert('Every set must have a label.');
     return;
   }
-
   const normalized = newLabels.map(label => safeKey(label).toLowerCase());
-
   if(new Set(normalized).size !== normalized.length){
     alert('Each set label must be unique within this exercise.');
     return;
   }
-
   const percentageEnabled = !!document.getElementById('percentageEnabled')?.checked;
   const maxWeight = Number(document.getElementById('percentageMaxWeight')?.value) || 0;
   const maxReps = parseInt(document.getElementById('percentageMaxReps')?.value, 10) || 0;
-
   if(percentageEnabled && (maxWeight <= 0 || maxReps <= 0)){
     alert('Enter both max weight and max reps for the percentage breakdown.');
     return;
   }
-
   const oldLabels = [...getExerciseSetLabels(ex)];
-
   migrateWorkoutKeys_ExerciseSetLabels(g, ex, oldLabels, newLabels);
-
   ex.setLabels = newLabels;
   ex.percentageConfig = {
     enabled: percentageEnabled,
     maxWeight: percentageEnabled ? maxWeight : 0,
     maxReps: percentageEnabled ? maxReps : 0
   };
-
   saveAppData(APP);
-
-  if(percentageEnabled){
-    applyPercentageBreakdownToExercise(g, ex);
-  }
-
+  if(percentageEnabled) applyPercentageBreakdownToExercise(g, ex);
   closeModal();
-
-  if(CURRENT_GROUP_ID === groupId){
-    openGroupPanel(groupId);
-  }
+  if(CURRENT_GROUP_ID === groupId) openGroupPanel(groupId);
 }
 
 function migrateWorkoutKeys_ExerciseSetLabels(group, ex, oldLabels, newLabels){
   const oldValues = oldLabels.map(label=>{
-    const key =
-      `${KEY_PREFIX}${safeKey(group.name)}::` +
-      `${safeKey(ex.name)}::${safeKey(label)}`;
+    const key = `${KEY_PREFIX}${safeKey(group.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
     return localStorage.getItem(key);
   });
-
   oldLabels.forEach(label=>{
-    const key =
-      `${KEY_PREFIX}${safeKey(group.name)}::` +
-      `${safeKey(ex.name)}::${safeKey(label)}`;
+    const key = `${KEY_PREFIX}${safeKey(group.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
     localStorage.removeItem(key);
   });
-
   newLabels.forEach((label, index)=>{
     if(index >= oldValues.length) return;
     const raw = oldValues[index];
     if(raw === null) return;
-
-    const newKey =
-      `${KEY_PREFIX}${safeKey(group.name)}::` +
-      `${safeKey(ex.name)}::${safeKey(label)}`;
-
+    const newKey = `${KEY_PREFIX}${safeKey(group.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
     localStorage.setItem(newKey, raw);
   });
 }
@@ -1501,57 +1247,35 @@ function migrateWorkoutKeys_ExerciseSetLabels(group, ex, oldLabels, newLabels){
 function applyPercentageBreakdownToExercise(group, ex){
   const cfg = ex.percentageConfig;
   if(!cfg || !cfg.enabled) return;
-
   const labels = getExerciseSetLabels(ex);
-  const rows = calculatePercentageBreakdown(
-    labels.length,
-    cfg.maxWeight,
-    cfg.maxReps
-  );
-
+  const rows = calculatePercentageBreakdown(labels.length, cfg.maxWeight, cfg.maxReps);
   rows.forEach((row, index)=>{
     const label = labels[index];
     if(!label) return;
-
-    const key =
-      `${KEY_PREFIX}${safeKey(group.name)}::` +
-      `${safeKey(ex.name)}::${safeKey(label)}`;
-
-    localStorage.setItem(key, JSON.stringify({
-      weight: row.weight,
-      set: row.reps
-    }));
+    const key = `${KEY_PREFIX}${safeKey(group.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
+    localStorage.setItem(key, JSON.stringify({ weight: row.weight, set: row.reps }));
   });
 }
 
-/* =======================
-   GROUP LIST / SORT
-======================= */
 const GROUP_SORT_MODE_KEY = 'BSCULPT::GROUPSORTMODE::v1';
 function getGroupSortMode(){
   const m = localStorage.getItem(GROUP_SORT_MODE_KEY) || 'user';
   return (m === 'alpha' || m === 'user') ? m : 'user';
 }
-
 function setGroupSortMode(mode){
   localStorage.setItem(GROUP_SORT_MODE_KEY, mode === 'alpha' ? 'alpha' : 'user');
   openGroupList();
   renderGroups();
 }
-
 function openGroupList(){
   const html = `
     <h3>Muscle Groups</h3>
-
     <div class="gl-toolbar">
       <div class="gl-pill ${getGroupSortMode()==='user' ? 'active':''}" onclick="setGroupSortMode('user')">User Order</div>
       <div class="gl-pill ${getGroupSortMode()==='alpha' ? 'active':''}" onclick="setGroupSortMode('alpha')">Alphabetical</div>
     </div>
-
     <div class="hint">In <b>User Order</b>, use ▲▼ to reorder. Alphabetical instantly sorts the grid.</div>
-
     <div id="groupListBody" class="gl-list"></div>
-
     <div class="actions" style="margin-top:12px;">
       <button onclick="closeModal()">Close</button>
       <button onclick="applyGroupListChanges()">Done</button>
@@ -1560,18 +1284,14 @@ function openGroupList(){
   openModal(html);
   renderGroupListBody();
 }
-
 function renderGroupListBody(){
   const body = document.getElementById('groupListBody');
   if(!body) return;
-
   const mode = getGroupSortMode();
   const list = (mode === 'alpha')
     ? [...APP.groups].sort((a,b)=>String(a.name).localeCompare(String(b.name)))
     : [...APP.groups];
-
   body.innerHTML = '';
-
   list.forEach((g, idx)=>{
     const canMove = (mode === 'user');
     const item = document.createElement('div');
@@ -1586,30 +1306,23 @@ function renderGroupListBody(){
     body.appendChild(item);
   });
 }
-
 function moveGroupInUserOrder(groupId, dir){
   const i = APP.groups.findIndex(g=>g.id===groupId);
   if(i < 0) return;
   const j = i + dir;
   if(j < 0 || j >= APP.groups.length) return;
-
   const tmp = APP.groups[i];
   APP.groups[i] = APP.groups[j];
   APP.groups[j] = tmp;
-
   saveAppData(APP);
   renderGroupListBody();
   renderGroups();
 }
-
 function applyGroupListChanges(){
   closeModal();
   renderGroups();
 }
 
-/* =======================
-   GROUP CRUD (upload OR URL)
-======================= */
 function addMuscleGroup(){
   openModal(`
     <h3>Add Muscle Group</h3>
@@ -1628,14 +1341,11 @@ async function confirmAddGroup(){
   const name = val('mgName');
   let img = val('mgImg');
   const f = fileEl('mgFile')?.files?.[0];
-
   if(!name){ alert('Enter a group name.'); return; }
-
   if(f){
     try{ img = await readFileAsDataURL(f); }
     catch{ alert('Could not read image. Try a different file.'); return; }
   }
-
   APP.groups.push({ id: uid(), name, img, exercises: [] });
   saveAppData(APP);
   closeModal();
@@ -1645,7 +1355,6 @@ async function confirmAddGroup(){
 function editMuscleGroup(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
   if(!g) return;
-
   openModal(`
     <h3>Edit Muscle Group</h3>
     <div class="row"><input id="mgName" placeholder="Group name" value="${escapeHtml(g.name)}"></div>
@@ -1662,24 +1371,18 @@ function editMuscleGroup(groupId){
 async function confirmEditGroup(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
   if(!g) return;
-
   const newName = val('mgName');
   let newImg  = val('mgImg');
   const f = fileEl('mgFile')?.files?.[0];
-
   if(!newName){ alert('Enter a group name.'); return; }
-
   if(f){
     try{ newImg = await readFileAsDataURL(f); }
     catch{ alert('Could not read image. Try a different file.'); return; }
   }
-
   const oldName = g.name;
   g.name = newName;
   g.img  = newImg;
-
   migrateWorkoutKeys_GroupRename(oldName, newName);
-
   saveAppData(APP);
   closeModal();
   renderGroups();
@@ -1689,7 +1392,6 @@ async function confirmEditGroup(groupId){
 function deleteMuscleGroup(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
   if(!g) return;
-
   openModal(`
     <h3>Delete Muscle Group</h3>
     <div style="font-weight:900; color:#ffb3bb; margin:6px 0 10px;">
@@ -1705,16 +1407,12 @@ function deleteMuscleGroup(groupId){
 function confirmDeleteGroup(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
   if(!g) return;
-
   g.exercises.forEach(ex=>{
     getExerciseSetLabels(ex).forEach(label=>{
-      const k =
-        `${KEY_PREFIX}${safeKey(g.name)}::` +
-        `${safeKey(ex.name)}::${safeKey(label)}`;
+      const k = `${KEY_PREFIX}${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
       localStorage.removeItem(k);
     });
   });
-
   APP.groups = APP.groups.filter(x=>x.id!==groupId);
   saveAppData(APP);
   closeModal();
@@ -1722,13 +1420,9 @@ function confirmDeleteGroup(groupId){
   if(CURRENT_GROUP_ID === groupId) closePanel();
 }
 
-/* =======================
-   EXERCISE CRUD (upload OR URL)
-======================= */
 function addExercise(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
   if(!g) return;
-
   openModal(`
     <h3>Add Exercise</h3>
     <div class="row"><input id="exName" placeholder="Exercise name (ex: Calf Raise)"></div>
@@ -1745,18 +1439,14 @@ function addExercise(groupId){
 async function confirmAddExercise(groupId){
   const g = APP.groups.find(x=>x.id===groupId);
   if(!g) return;
-
   const name = val('exName');
   let img  = val('exImg');
   const f = fileEl('exFile')?.files?.[0];
-
   if(!name){ alert('Enter an exercise name.'); return; }
-
   if(f){
     try{ img = await readFileAsDataURL(f); }
     catch{ alert('Could not read image. Try a different file.'); return; }
   }
-
   g.exercises.push({
     id: uid(),
     name,
@@ -1773,7 +1463,6 @@ function editExercise(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
-
   openModal(`
     <h3>Edit Exercise</h3>
     <div class="row"><input id="exName" placeholder="Exercise name" value="${escapeHtml(ex.name)}"></div>
@@ -1791,24 +1480,18 @@ async function confirmEditExercise(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
-
   const newName = val('exName');
   let newImg  = val('exImg');
   const f = fileEl('exFile')?.files?.[0];
-
   if(!newName){ alert('Enter an exercise name.'); return; }
-
   if(f){
     try{ newImg = await readFileAsDataURL(f); }
     catch{ alert('Could not read image. Try a different file.'); return; }
   }
-
   const oldName = ex.name;
   ex.name = newName;
   ex.img  = newImg;
-
   migrateWorkoutKeys_ExerciseRename(g.name, oldName, newName, ex);
-
   saveAppData(APP);
   closeModal();
   openGroupPanel(groupId);
@@ -1818,7 +1501,6 @@ function deleteExercise(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
-
   openModal(`
     <h3>Delete Exercise</h3>
     <div style="font-weight:900; color:#ffb3bb; margin:6px 0 10px;">
@@ -1835,23 +1517,16 @@ function confirmDeleteExercise(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
-
   getExerciseSetLabels(ex).forEach(label=>{
-    const k =
-      `${KEY_PREFIX}${safeKey(g.name)}::` +
-      `${safeKey(ex.name)}::${safeKey(label)}`;
+    const k = `${KEY_PREFIX}${safeKey(g.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
     localStorage.removeItem(k);
   });
-
   g.exercises = g.exercises.filter(e=>e.id!==exId);
   saveAppData(APP);
   closeModal();
   openGroupPanel(groupId);
 }
 
-/* =======================
-   KEY MIGRATIONS
-======================= */
 function migrateWorkoutKeys_GroupRename(oldGroup, newGroup){
   const oldPrefix = `${KEY_PREFIX}${safeKey(oldGroup)}::`;
   const keys = Object.keys(localStorage).filter(k => k.startsWith(oldPrefix));
@@ -1863,14 +1538,11 @@ function migrateWorkoutKeys_GroupRename(oldGroup, newGroup){
     localStorage.removeItem(oldKey);
   });
 }
-
 function migrateWorkoutKeys_ExerciseRename(groupName, oldEx, newEx, ex){
   const base = `${KEY_PREFIX}${safeKey(groupName)}::`;
-
   getExerciseSetLabels(ex).forEach(label=>{
     const oldKey = `${base}${safeKey(oldEx)}::${safeKey(label)}`;
     const v = localStorage.getItem(oldKey);
-
     if(v !== null){
       const newKey = `${base}${safeKey(newEx)}::${safeKey(label)}`;
       localStorage.setItem(newKey, v);
@@ -1879,9 +1551,6 @@ function migrateWorkoutKeys_ExerciseRename(groupName, oldEx, newEx, ex){
   });
 }
 
-/* =======================
-   EXPORT / IMPORT (supports v4 + older v2)
-======================= */
 function exportData(){
   const out = {
     meta:{ app:'Body Sculpt', version:4, exportedAt:new Date().toISOString() },
@@ -1889,12 +1558,10 @@ function exportData(){
     gridCols: getGridCols(),
     workouts: {}
   };
-
   Object.keys(localStorage).forEach(k=>{
     if(!k.startsWith(KEY_PREFIX)) return;
     if(k === APP_KEY) return;
     if(k === GRID_KEY) return;
-
     const raw = localStorage.getItem(k);
     try{
       out.workouts[k] = JSON.parse(raw);
@@ -1902,7 +1569,6 @@ function exportData(){
       out.workouts[k] = raw;
     }
   });
-
   const blob = new Blob([JSON.stringify(out,null,2)], {type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1913,11 +1579,9 @@ function exportData(){
 document.getElementById('importFile').onchange = e=>{
   const f = e.target.files[0]; if(!f) return;
   const r = new FileReader();
-
   r.onload = ()=>{
     try{
       const d = JSON.parse(r.result);
-
       Object.keys(localStorage).forEach(k=>{
         if(!k.startsWith(KEY_PREFIX)) return;
         if(k === APP_KEY) return;
@@ -1927,11 +1591,9 @@ document.getElementById('importFile').onchange = e=>{
 
       if(d && d.appData && Array.isArray(d.appData.groups)){
         APP = d.appData;
-
         if(!Array.isArray(APP.setLabels) || APP.setLabels.length === 0){
           APP.setLabels = [...DEFAULT_SET_LABELS];
         }
-
         APP.groups.forEach(group=>{
           (group.exercises || []).forEach(ex=>{
             if(!Array.isArray(ex.setLabels) || ex.setLabels.length === 0){
@@ -1942,11 +1604,8 @@ document.getElementById('importFile').onchange = e=>{
             }
           });
         });
-
         saveAppData(APP);
-
         if(typeof d.gridCols === 'number') applyGridCols(d.gridCols);
-
         if(d.workouts && typeof d.workouts === 'object'){
           Object.keys(d.workouts).forEach(k=>{
             if(!k.startsWith(KEY_PREFIX)) return;
@@ -1956,7 +1615,6 @@ document.getElementById('importFile').onchange = e=>{
             localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v ?? {}));
           });
         }
-
         alert('Import complete.');
         renderGroups();
         closePanel();
@@ -1970,11 +1628,9 @@ document.getElementById('importFile').onchange = e=>{
         const newGroups = d.groups.map(g=>{
           const defG = defByName(g.group);
           const groupImg = defG?.img || '';
-
           const exercises = (g.exercises || []).map(ex=>{
             const defEx = defG?.exercises?.find(x=>x.name === ex.name);
             const labels = [];
-
             (ex.charts || []).forEach(c=>{
               if(!c || !c.label) return;
               const label = String(c.label).trim();
@@ -1982,7 +1638,6 @@ document.getElementById('importFile').onchange = e=>{
                 labels.push(label);
               }
             });
-
             return {
               id: uid(),
               name: ex.name,
@@ -1991,25 +1646,16 @@ document.getElementById('importFile').onchange = e=>{
               percentageConfig: { enabled:false, maxWeight:0, maxReps:0 }
             };
           });
-
           return { id: uid(), name: g.group, img: groupImg, exercises };
         });
 
         const importedLabels = [];
-
         d.groups.forEach(g=>{
           (g.exercises || []).forEach(ex=>{
             (ex.charts || []).forEach(c=>{
               if(!c || !c.label) return;
-
               const label = String(c.label).trim();
-
-              if(
-                label &&
-                !importedLabels.some(
-                  existing => existing.toLowerCase() === label.toLowerCase()
-                )
-              ){
+              if(label && !importedLabels.some(existing => existing.toLowerCase() === label.toLowerCase())){
                 importedLabels.push(label);
               }
             });
@@ -2018,9 +1664,7 @@ document.getElementById('importFile').onchange = e=>{
 
         APP = {
           version: 1,
-          setLabels: importedLabels.length
-            ? importedLabels
-            : [...DEFAULT_SET_LABELS],
+          setLabels: importedLabels.length ? importedLabels : [...DEFAULT_SET_LABELS],
           groups: newGroups
         };
 
@@ -2052,33 +1696,26 @@ document.getElementById('importFile').onchange = e=>{
       alert('Import failed. Invalid file.');
     }
   };
-
   r.readAsText(f);
 };
 
-/* =======================
-   RESET (only this app)
-======================= */
 function resetBabeSculpting(){
   if(!confirm('This will ERASE ALL Body Sculpt data (groups, exercises, workout entries). Continue?')) return;
-
   Object.keys(localStorage)
     .filter(k => k.startsWith(KEY_PREFIX))
     .forEach(k => localStorage.removeItem(k));
-
   localStorage.removeItem(APP_KEY);
-
   APP = loadAppData();
   renderGroups();
   closePanel();
 }
 
-/* =======================
-   INIT
-======================= */
 applyGridCols(getGridCols());
 renderGroups();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./body-sculpt-cloud-configured.js"></script>
 
 </body>
 </html>
