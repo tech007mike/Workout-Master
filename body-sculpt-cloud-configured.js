@@ -11,7 +11,7 @@
   Replace the two placeholders below with your Supabase project values.
 */
 
-const BODY_SCULPT_SUPABASE_URL = 'https://bfaepbmmpbnqvfkwfskh.supabase.com';
+const BODY_SCULPT_SUPABASE_URL = 'https://bfaepbmmpbnqvfkwfskh.supabase.co';
 const BODY_SCULPT_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__KVDIY7fTO4xkFfFriCMkA_DIPmwufd';
 
 const bsSupabase = supabase.createClient(
