@@ -1016,110 +1016,44 @@ function formatWeight(value){
   return Number.isInteger(n) ? String(n) : n.toFixed(1);
 }
 
-function calculatePercentageBreakdown(setCount, maxWeight, maxReps){
-  const count = Math.max(1, parseInt(setCount, 10) || 1);
-  const maxW = Math.max(0, Number(maxWeight) || 0);
-  const maxR = Math.max(0, parseInt(maxReps, 10) || 0);
-  const rows = [];
-  for(let i = 0; i < count; i++){
-    let weight = 0;
-    let reps = maxR;
-    let suggestedLabel = `Set ${i + 1}`;
-    if(i === 0){
-      weight = roundToNearest2_5(maxW * 0.5);
-      reps = maxR + 2;
-      suggestedLabel = 'Warm Up';
-    }else if(i === 1){
-      weight = roundToNearest2_5(maxW);
-      reps = maxR;
-      suggestedLabel = 'Max';
-    }else{
-      const previousWeight = rows[i - 1].weight;
-      weight = roundToNearest2_5(previousWeight * 0.8);
-      reps = maxR + ((i - 1) * 2);
-      suggestedLabel = `Set ${i + 1}`;
-    }
-    rows.push({ index: i, weight, reps, suggestedLabel });
-  }
-  return rows;
-}
-
 function openSetSettings(groupId, exId){
   const g = APP.groups.find(x=>x.id===groupId);
   const ex = g?.exercises.find(e=>e.id===exId);
   if(!g || !ex) return;
   const labels = [...getExerciseSetLabels(ex)];
-  const pct = ex.percentageConfig || {};
-  const pctEnabled = pct.enabled === true;
-  const maxWeight = Number(pct.maxWeight) || '';
-  const maxReps = Number.isFinite(Number(pct.maxReps)) && Number(pct.maxReps) > 0
-    ? Number(pct.maxReps)
-    : '';
   openModal(`
     <h3>Edit Sets — ${escapeHtml(ex.name)}</h3>
     <div class="row">
       <input id="setCount" type="number" inputmode="numeric" min="1" max="20" step="1"
-        value="${labels.length}" placeholder="Number of sets"
+        value="" placeholder="Number of sets"
         oninput="handleSetCountChange(this.value)">
     </div>
     <div class="hint">
       These set rows and labels apply only to <b>${escapeHtml(ex.name)}</b>.
       Other exercises will not be changed.
     </div>
-    <div class="percent-box">
-      <label class="percent-toggle">
-        <input id="percentageEnabled" type="checkbox" ${pctEnabled ? 'checked' : ''}
-          onchange="togglePercentageFields()">
-        Use percentage breakdown
-      </label>
-      <div id="percentageFields" style="${pctEnabled ? '' : 'display:none'}">
-        <div class="percent-fields">
-          <input id="percentageMaxWeight" type="number" inputmode="decimal" min="0" step="2.5"
-            placeholder="Max weight (lb)" value="${maxWeight}" oninput="updatePercentagePreview()">
-          <input id="percentageMaxReps" type="number" inputmode="numeric" min="1" step="1"
-            placeholder="Max reps" value="${maxReps}" oninput="updatePercentagePreview()">
-        </div>
-        <div class="hint" style="margin-top:8px;">
-          Set 1 = 50% warm up. Set 2 = max. Each set after that is
-          80% of the previous set, rounded to the nearest 2.5 lb.
-          Reps increase by 2 for each set after the max set.
-        </div>
-        <div id="percentagePreview" class="percent-preview"></div>
-      </div>
-    </div>
     <div id="setLabelsContainer"
       style="display:flex; flex-direction:column; gap:8px; margin-top:12px;"></div>
-    <div class="hint" style="margin-top:10px;">
-      You can still edit every label manually. When percentage breakdown is enabled,
-      saving also fills the calculated weight and reps into this exercise.
-    </div>
     <div class="actions">
       <button onclick="closeModal()">Cancel</button>
       <button onclick="confirmSetSettings('${groupId}','${exId}')">Save</button>
     </div>
   `);
-  renderSetLabelInputs(labels.length, labels);
-  updatePercentagePreview();
+  renderSetLabelInputs(labels.length, labels, false);
 }
 
 function handleSetCountChange(count){
+  if(String(count).trim() === '') return;
   renderSetLabelInputs(count);
-  updatePercentagePreview();
 }
-function togglePercentageFields(){
-  const enabled = !!document.getElementById('percentageEnabled')?.checked;
-  const fields = document.getElementById('percentageFields');
-  if(fields) fields.style.display = enabled ? '' : 'none';
-  updatePercentagePreview();
-}
-function renderSetLabelInputs(count, suppliedValues = null){
+function renderSetLabelInputs(count, suppliedValues = null, syncCountInput = true){
   const container = document.getElementById('setLabelsContainer');
   if(!container) return;
   let n = parseInt(count, 10);
   if(!Number.isFinite(n)) n = 1;
   n = Math.max(1, Math.min(20, n));
   const countInput = document.getElementById('setCount');
-  if(countInput && String(countInput.value) !== String(n)) countInput.value = n;
+  if(syncCountInput && countInput && String(countInput.value) !== String(n)) countInput.value = n;
   let currentValues = [];
   if(Array.isArray(suppliedValues)){
     currentValues = [...suppliedValues];
@@ -1134,56 +1068,9 @@ function renderSetLabelInputs(count, suppliedValues = null){
     row.style.margin = '0';
     row.innerHTML = `
       <input class="set-label-input" data-index="${i}"
-        placeholder="Set ${i + 1} label" value="${escapeHtml(value)}"
-        oninput="updatePercentagePreview()">`;
+        placeholder="Set ${i + 1} label" value="${escapeHtml(value)}">`;
     container.appendChild(row);
   }
-  if(document.getElementById('percentageEnabled')?.checked){
-    applySuggestedPercentageLabels();
-  }
-}
-
-function applySuggestedPercentageLabels(){
-  const enabled = !!document.getElementById('percentageEnabled')?.checked;
-  if(!enabled) return;
-  const inputs = [...document.querySelectorAll('#setLabelsContainer .set-label-input')];
-  inputs.forEach((input, index)=>{
-    if(index === 0 && (!input.value.trim() || /^set\s*1$/i.test(input.value.trim()))){
-      input.value = 'Warm Up';
-    }else if(index === 1 && (!input.value.trim() || /^set\s*2$/i.test(input.value.trim()))){
-      input.value = 'Max';
-    }else if(index >= 2 && !input.value.trim()){
-      input.value = `Set ${index + 1}`;
-    }
-  });
-}
-
-function updatePercentagePreview(){
-  const preview = document.getElementById('percentagePreview');
-  if(!preview) return;
-  const enabled = !!document.getElementById('percentageEnabled')?.checked;
-  if(!enabled){
-    preview.innerHTML = '';
-    return;
-  }
-  applySuggestedPercentageLabels();
-  const setCount = parseInt(document.getElementById('setCount')?.value, 10) || 1;
-  const maxWeight = Number(document.getElementById('percentageMaxWeight')?.value) || 0;
-  const maxReps = parseInt(document.getElementById('percentageMaxReps')?.value, 10) || 0;
-  const labels = [...document.querySelectorAll('#setLabelsContainer .set-label-input')]
-    .map((input, i)=>input.value.trim() || `Set ${i + 1}`);
-  if(maxWeight <= 0 || maxReps <= 0){
-    preview.innerHTML = `<div class="hint">Enter max weight and max reps to preview the breakdown.</div>`;
-    return;
-  }
-  const rows = calculatePercentageBreakdown(setCount, maxWeight, maxReps);
-  preview.innerHTML = rows.map((row, i)=>`
-    <div class="percent-preview-row">
-      <strong>${escapeHtml(labels[i] || row.suggestedLabel)}</strong>
-      <span>${formatWeight(row.weight)} lb</span>
-      <span>${row.reps} reps</span>
-    </div>
-  `).join('');
 }
 
 function confirmSetSettings(groupId, exId){
@@ -1205,23 +1092,11 @@ function confirmSetSettings(groupId, exId){
     alert('Each set label must be unique within this exercise.');
     return;
   }
-  const percentageEnabled = !!document.getElementById('percentageEnabled')?.checked;
-  const maxWeight = Number(document.getElementById('percentageMaxWeight')?.value) || 0;
-  const maxReps = parseInt(document.getElementById('percentageMaxReps')?.value, 10) || 0;
-  if(percentageEnabled && (maxWeight <= 0 || maxReps <= 0)){
-    alert('Enter both max weight and max reps for the percentage breakdown.');
-    return;
-  }
   const oldLabels = [...getExerciseSetLabels(ex)];
   migrateWorkoutKeys_ExerciseSetLabels(g, ex, oldLabels, newLabels);
   ex.setLabels = newLabels;
-  ex.percentageConfig = {
-    enabled: percentageEnabled,
-    maxWeight: percentageEnabled ? maxWeight : 0,
-    maxReps: percentageEnabled ? maxReps : 0
-  };
+  ex.percentageConfig = { enabled:false, maxWeight:0, maxReps:0 };
   saveAppData(APP);
-  if(percentageEnabled) applyPercentageBreakdownToExercise(g, ex);
   closeModal();
   if(CURRENT_GROUP_ID === groupId) openGroupPanel(groupId);
 }
@@ -1241,19 +1116,6 @@ function migrateWorkoutKeys_ExerciseSetLabels(group, ex, oldLabels, newLabels){
     if(raw === null) return;
     const newKey = `${KEY_PREFIX}${safeKey(group.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
     localStorage.setItem(newKey, raw);
-  });
-}
-
-function applyPercentageBreakdownToExercise(group, ex){
-  const cfg = ex.percentageConfig;
-  if(!cfg || !cfg.enabled) return;
-  const labels = getExerciseSetLabels(ex);
-  const rows = calculatePercentageBreakdown(labels.length, cfg.maxWeight, cfg.maxReps);
-  rows.forEach((row, index)=>{
-    const label = labels[index];
-    if(!label) return;
-    const key = `${KEY_PREFIX}${safeKey(group.name)}::${safeKey(ex.name)}::${safeKey(label)}`;
-    localStorage.setItem(key, JSON.stringify({ weight: row.weight, set: row.reps }));
   });
 }
 
